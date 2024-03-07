@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Sentiment Analysis</title>
+</head>
+<body>
+    <h1>Audio Sentiment Analysis</h1>
+    {% if error %}
+        <p>{{ error }}</p>
+    {% elif sentiment_score is defined and sentiment_label is defined %}
+        <p>Sentiment Score: {{ sentiment_score }}, Sentiment Label: {{ sentiment_label }}</p>
+    {% endif %}
+    <form method="post" enctype="multipart/form-data">
+        <label for="file">Choose an audio file:</label>
+        <input type="file" id="file" name="file" accept=".wav">
+        <br>
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
