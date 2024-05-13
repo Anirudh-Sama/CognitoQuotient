@@ -13,7 +13,7 @@ from AudioSenti import analyze_sentiment
 from StutterCheck import analyze_stutter
 
 
-rf = Roboflow(api_key="LF4lxbBefvMh8W3awrgv")
+rf = Roboflow(api_key="R_API_KEY")
 
 project_f = rf.workspace().project("face-emotion-s9kw9")
 model_f = project_f.version(1).model
