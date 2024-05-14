@@ -61,7 +61,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 @app.route('/')
 def home():
   return jsonify({"hello":"world"})
-app.route('/upload',methods=['POST'])
+@app.route('/upload',methods=['POST'])
 def upload():
   if request.method=='POST':
     if 'video' not in request.files:
