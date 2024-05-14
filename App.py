@@ -11,6 +11,7 @@ import numpy as np
 from roboflow import Roboflow
 from AudioSenti import analyze_sentiment
 from StutterCheck import analyze_stutter
+import os
 
 
 rf = Roboflow(api_key="LF4lxbBefvMh8W3awrgv")
@@ -21,8 +22,7 @@ model_f = project_f.version(1).model
 project_d = rf.workspace().project("dress-model-gknib")
 model_d = project_d.version(1).model
 
-def highest_confidence_class(model,image):
-    predictions = model.predict(image).json()['predictions']
+def highest_confidence_class(predictions):
     max_confidence = float('-inf')
     max_class = None
     
@@ -36,22 +36,34 @@ def highest_confidence_class(model,image):
     
     return max_class
 
-
-def get_best(model,vid):
-    cap = cv2.VideoCapture(vid)
-    frame_total=int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    step=int(0.1*frame_total)
-    result_list=[]
+def save_frames_as_images(video_file):
+    cap = cv2.VideoCapture(video_file)
+    frame_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    step = int(0.1 * frame_total)
+    image_fol = "images"
+    if not os.path.exists(image_fol):
+        os.makedirs(image_fol)
+    
     for i in range(0,frame_total,step):
-        cap.set(1,i)
+        cap.set(1, i)
         ret, frame = cap.read()
         if not ret:
             break
-        result = highest_confidence_class(model,frame)
-        result_list.append(np.argmax(result))
+        cv2.imwrite(f"{image_fol}/frame_{i}.jpg", frame)
 
-    return Counter(result).most_common(1)[0][0]
 
+def get_best(model, video):
+    save_frames_as_images(video)
+    image_folder = "images"
+    result_list = []
+    for filename in os.listdir(image_folder):
+        if filename.endswith(".jpg"):
+            image_path = os.path.join(image_folder, filename)
+            predictions = model.predict(image_path).json()['predictions']
+            result = highest_confidence_class(predictions)
+            result_list.append(result)
+    
+    return Counter(result_list).most_common(1)[0][0]
 
 
 
@@ -80,9 +92,12 @@ def upload():
     audf='temp.wav'
 
 
-    emotion=get_best(model_f,vid)[1::]
-    dress_code=get_best(model_d,vid)
-    sentiment=analyze_sentiment(audf)
+    emotion=get_best(model_f,vid_path)[1::]
+    dress_code=get_best(model_d,vid_path)
+    try:
+        sentiment=analyze_sentiment(audf)
+    except(sr.UnknownValueError):
+        sentiment="No speech detected"
     stutter=analyze_stutter(audf)
 
 
@@ -97,4 +112,4 @@ def upload():
                   "Stutter":stutter})
 
 if __name__=='__main__':
-  app.run()
+  app.run(debug=True)
