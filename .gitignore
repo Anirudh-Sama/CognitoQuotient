@@ -1,3 +1,3 @@
-/__pycache__/
-temp*
-/images
+/models
+/training_data
+/__pycache__
